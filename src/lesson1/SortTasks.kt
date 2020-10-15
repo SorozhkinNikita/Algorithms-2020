@@ -2,6 +2,8 @@
 
 package lesson1
 
+import java.io.File
+
 /**
  * Сортировка времён
  *
@@ -64,6 +66,40 @@ fun sortTimes(inputName: String, outputName: String) {
  */
 fun sortAddresses(inputName: String, outputName: String) {
     TODO()
+    /*data class Citizen(
+        val lastName: String,
+        val firstName: String
+    )
+
+    data class Address(
+        val streetName: String,
+        val houseNumber: Int
+    )
+
+    fun String.toAddress(): Pair<Citizen, Address> {
+        val addressFormat = Regex("""^\S+ \S+ \d+$""")
+        require(addressFormat.matches(this))
+        val res = mutableListOf<String>()
+
+        val parts = this.split(" - ")
+        res += parts.first().split(" ")
+        res += parts.last().split(" ")
+
+        val citizen = Citizen(res[0], res[1])
+        val address = Address(res[2], res[3].toInt())
+
+        return citizen to address
+    }
+
+    val addresses = File(inputName).readLines().map { it.toAddress() }.sortedWith(compareBy(
+        { it.second.streetName },
+        { it.second.houseNumber },
+        { it.first.lastName },
+        { it.first.firstName }
+    ))
+
+    val outputStream = File(outputName).bufferedWriter()
+    */
 }
 
 /**
@@ -97,7 +133,24 @@ fun sortAddresses(inputName: String, outputName: String) {
  * 121.3
  */
 fun sortTemperatures(inputName: String, outputName: String) {
-    TODO()
+    //Асимптотика O(N)
+    //Ресурсоемкость O(1)
+    val maxValue = 5000 + 2730 + 1
+    val numberOfValues = mutableListOf<Int>()
+    for (i in 1..maxValue) numberOfValues.add(0)
+    for (str in File(inputName).readLines()) {
+        val temp = (str.toDouble() * 10 + 2730).toInt()
+        numberOfValues[temp]++
+    }
+    File(outputName).bufferedWriter().use { str ->
+        numberOfValues.forEachIndexed { index, value ->
+            if (value != 0) {
+                for (i in 1..value) {
+                    str.write("${(index - 2730) / 10.0}\n")
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -130,7 +183,40 @@ fun sortTemperatures(inputName: String, outputName: String) {
  * 2
  */
 fun sortSequence(inputName: String, outputName: String) {
-    TODO()
+    val map = mutableMapOf<Int, Int>()
+    /*File(inputName).useLines { lines ->
+        lines.forEach {
+            val number = it.toInt()
+            map[number] = map.getOrDefault(number, 0) + 1
+        }
+    }*/
+    val numbers = File(inputName).readLines().map { it.toInt() }
+    for (n in numbers) map[n] = map.getOrDefault(n, 0) + 1
+    /*File(inputName).readLines().map { line ->
+        val number = line.toInt()
+        map[number] = map.getOrDefault(number, 0) + 1
+    }*/
+    /*File(inputName).bufferedReader().useLines {
+        it.map { str ->
+            val number = str.toInt()
+            map[number] = map.getOrDefault(number, 0) + 1
+        }
+    }*/
+    require(map.isNotEmpty())
+    var maxValueOfNumbers: Pair<Int?, Int?> = null to null
+    for ((number, count) in map) {
+        if (maxValueOfNumbers.second == null || maxValueOfNumbers.second!! < count ||
+            maxValueOfNumbers.second!! == count && maxValueOfNumbers.first!! > number
+        ) maxValueOfNumbers = number to count
+    }
+    //require(maxValueOfNumbers.first == null)
+    File(outputName).bufferedWriter().use { str ->
+        map.forEach {
+            if (it != maxValueOfNumbers) str.write("$it.key\n")
+        }
+        for (i in 1..maxValueOfNumbers.second!!)
+            str.write("${maxValueOfNumbers.first!!}\n")
+    }
 }
 
 /**

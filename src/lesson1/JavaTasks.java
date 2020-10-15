@@ -35,7 +35,7 @@ public class JavaTasks {
      * В случае обнаружения неверного формата файла бросить любое исключение.
      */
     static public void sortTimes(String inputName, String outputName) {
-        throw new NotImplementedError();
+         throw new NotImplementedError();
     }
 
     /**
