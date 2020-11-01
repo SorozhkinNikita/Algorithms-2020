@@ -93,9 +93,38 @@ fun josephTask(menNumber: Int, choiceInterval: Int): Int {
  * При сравнении подстрок, регистр символов *имеет* значение.
  * Если имеется несколько самых длинных общих подстрок одной длины,
  * вернуть ту из них, которая встречается раньше в строке first.
+ *
+ * Асимптотика O(first.length * second.length)
+ * Ресурсоемкость O(first.length * second.length)
  */
+
+
+
 fun longestCommonSubstring(first: String, second: String): String {
-    TODO()
+    if (first.isEmpty() || second.isEmpty()) return ""
+    if (first == second) return first
+
+    val matrix = mutableListOf<MutableList<Int>>()
+
+    var maxLength = 0
+    var maxI = 0
+
+    for (i in 0..first.length) {
+        val line = mutableListOf<Int>()
+        for (j in 0..second.length)
+            line.add(
+                if (i * j != 0 && first[i - 1] == second[j - 1]) {
+                    val cell = matrix[i - 1][j - 1] + 1
+                    if (cell > maxLength) {
+                        maxLength = cell
+                        maxI = i
+                    }
+                    cell
+                } else 0
+            )
+        matrix.add(line)
+    }
+    return first.substring(maxI - maxLength, maxI)
 }
 
 /**
@@ -107,7 +136,29 @@ fun longestCommonSubstring(first: String, second: String): String {
  *
  * Справка: простым считается число, которое делится нацело только на 1 и на себя.
  * Единица простым числом не считается.
+ *
+ * Асимптотика O(N*log(log(N)))
+ * Ресурсоемкость O(N)
  */
 fun calcPrimesNumber(limit: Int): Int {
-    TODO()
+    if (limit <= 1) return 0
+    if (limit == 2) return 1
+    val sieve = mutableListOf<Boolean>()
+    for (i in 1..limit) sieve.add(true)
+    var count = limit - 1
+    var j = 2
+    while (j + 1 < limit) {
+        var i = j - 1
+        while (i + j < limit) {
+            i += j
+            if (sieve[i]) {
+                count--
+                sieve[i] = false
+            }
+        }
+        do {
+            j += 1
+        } while (j < limit && !sieve[j - 1])
+    }
+    return count
 }

@@ -131,10 +131,11 @@ fun sortAddresses(inputName: String, outputName: String) {
  * 24.7
  * 99.5
  * 121.3
+ *
+ * Асимптотика O(N)
+ * Ресурсоемкость O(1)
  */
 fun sortTemperatures(inputName: String, outputName: String) {
-    //Асимптотика O(N)
-    //Ресурсоемкость O(1)
     val maxValue = 5000 + 2730 + 1
     val numberOfValues = mutableListOf<Int>()
     for (i in 1..maxValue) numberOfValues.add(0)
@@ -181,27 +182,14 @@ fun sortTemperatures(inputName: String, outputName: String) {
  * 2
  * 2
  * 2
+ *
+ * Асимптотика O(N)
+ * Ресурсоемкость O(N)
  */
 fun sortSequence(inputName: String, outputName: String) {
     val map = mutableMapOf<Int, Int>()
-    /*File(inputName).useLines { lines ->
-        lines.forEach {
-            val number = it.toInt()
-            map[number] = map.getOrDefault(number, 0) + 1
-        }
-    }*/
     val numbers = File(inputName).readLines().map { it.toInt() }
     for (n in numbers) map[n] = map.getOrDefault(n, 0) + 1
-    /*File(inputName).readLines().map { line ->
-        val number = line.toInt()
-        map[number] = map.getOrDefault(number, 0) + 1
-    }*/
-    /*File(inputName).bufferedReader().useLines {
-        it.map { str ->
-            val number = str.toInt()
-            map[number] = map.getOrDefault(number, 0) + 1
-        }
-    }*/
     require(map.isNotEmpty())
     var maxValueOfNumbers: Pair<Int?, Int?> = null to null
     for ((number, count) in map) {
@@ -209,10 +197,9 @@ fun sortSequence(inputName: String, outputName: String) {
             maxValueOfNumbers.second!! == count && maxValueOfNumbers.first!! > number
         ) maxValueOfNumbers = number to count
     }
-    //require(maxValueOfNumbers.first == null)
     File(outputName).bufferedWriter().use { str ->
-        map.forEach {
-            if (it != maxValueOfNumbers) str.write("$it.key\n")
+        numbers.forEach {
+            if (it != maxValueOfNumbers.first) str.write("$it\n")
         }
         for (i in 1..maxValueOfNumbers.second!!)
             str.write("${maxValueOfNumbers.first!!}\n")

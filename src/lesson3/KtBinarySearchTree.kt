@@ -9,6 +9,7 @@ class KtBinarySearchTree<T : Comparable<T>> : AbstractMutableSet<T>(), Checkable
     private class Node<T>(
         val value: T
     ) {
+        var parent: Node<T>? = null
         var left: Node<T>? = null
         var right: Node<T>? = null
     }
@@ -57,10 +58,12 @@ class KtBinarySearchTree<T : Comparable<T>> : AbstractMutableSet<T>(), Checkable
             comparison < 0 -> {
                 assert(closest.left == null)
                 closest.left = newNode
+                newNode.parent = closest
             }
             else -> {
                 assert(closest.right == null)
                 closest.right = newNode
+                newNode.parent = closest
             }
         }
         size++
@@ -79,9 +82,39 @@ class KtBinarySearchTree<T : Comparable<T>> : AbstractMutableSet<T>(), Checkable
      *
      * Средняя
      */
-    override fun remove(element: T): Boolean {
-        TODO()
+
+    private fun swapNodes(curr: Node<T>, child: Node<T>?) {
+        when {
+            curr.parent == null -> root = child
+            curr == curr.parent!!.right -> curr.parent!!.right = child
+            else -> curr.parent!!.left = child
+        }
+        if (child != null) curr.parent = child.parent
     }
+
+    override fun remove(element: T): Boolean {
+        val closest = find(element) ?: return false
+        if (closest.value != element) return false
+        when { //1 ребенок
+            closest.left == null -> swapNodes(closest, closest.right)
+            closest.right == null -> swapNodes(closest, closest.left)
+            else -> {//2 ребенка
+                var temporaryNode = closest.right
+                while (temporaryNode!!.left != null) temporaryNode = temporaryNode.left
+                if (temporaryNode.parent != closest) {
+                    swapNodes(temporaryNode, temporaryNode.right)
+                    temporaryNode.right = closest.right
+                    temporaryNode.right!!.parent = temporaryNode
+                }
+                swapNodes(closest, temporaryNode)
+                temporaryNode.left = closest.left
+                temporaryNode.left!!.parent = temporaryNode
+            }
+        }
+        size--
+        return true
+    }
+
 
     override fun comparator(): Comparator<in T>? =
         null
@@ -90,6 +123,10 @@ class KtBinarySearchTree<T : Comparable<T>> : AbstractMutableSet<T>(), Checkable
         BinarySearchTreeIterator()
 
     inner class BinarySearchTreeIterator internal constructor() : MutableIterator<T> {
+
+        private val stack = Stack<Node<T>>()
+        private var cur = root
+        private var prev: Node<T>? = null
 
         /**
          * Проверка наличия следующего элемента
@@ -101,10 +138,7 @@ class KtBinarySearchTree<T : Comparable<T>> : AbstractMutableSet<T>(), Checkable
          *
          * Средняя
          */
-        override fun hasNext(): Boolean {
-            // TODO
-            throw NotImplementedError()
-        }
+        override fun hasNext(): Boolean = stack.isNotEmpty() || cur != null
 
         /**
          * Получение следующего элемента
@@ -120,8 +154,15 @@ class KtBinarySearchTree<T : Comparable<T>> : AbstractMutableSet<T>(), Checkable
          * Средняя
          */
         override fun next(): T {
-            // TODO
-            throw NotImplementedError()
+            while (cur != null) {
+                stack.push(cur)
+                cur = cur?.left
+            }
+            if (!hasNext()) throw NoSuchElementException()
+            cur = stack.pop()
+            prev = cur
+            cur = cur?.right
+            return prev?.value!!
         }
 
         /**
@@ -137,8 +178,8 @@ class KtBinarySearchTree<T : Comparable<T>> : AbstractMutableSet<T>(), Checkable
          * Сложная
          */
         override fun remove() {
-            // TODO
-            throw NotImplementedError()
+            remove(prev?.value ?: throw IllegalStateException())
+            prev = null
         }
 
     }
