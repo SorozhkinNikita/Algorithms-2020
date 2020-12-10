@@ -8,6 +8,8 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
         require(bits in 2..31)
     }
 
+    private class Deleted {}
+
     private val capacity = 1 shl bits
 
     private val storage = Array<Any?>(capacity) { null }
@@ -51,7 +53,7 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
         val startingIndex = element.startingIndex()
         var index = startingIndex
         var current = storage[index]
-        while (current != null) {
+        while (current != null && current !is Deleted) {
             if (current == element) {
                 return false
             }
@@ -76,7 +78,18 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
      * Средняя
      */
     override fun remove(element: T): Boolean {
-        TODO("not implemented")
+        var i = element.startingIndex()
+        var cur = storage[i]
+        while (cur != null && cur !is Deleted) {
+            if (cur == element) {
+                storage[i] = Deleted()
+                size--
+                return true
+            }
+            i = (i + 1) % capacity
+            cur = storage[i]
+        }
+        return false
     }
 
     /**
@@ -89,7 +102,37 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
      *
      * Средняя (сложная, если поддержан и remove тоже)
      */
-    override fun iterator(): MutableIterator<T> {
-        TODO("not implemented")
+    override fun iterator(): MutableIterator<T> = OpenAddressingSetIterator()
+
+    inner class OpenAddressingSetIterator internal constructor() : MutableIterator<T> {
+        private var lastNext: Any? = null
+        private var i = 0
+        private var count = 0
+
+        //Время O(1)
+        //Память O(1)
+        override fun hasNext(): Boolean = count < size
+
+        //Время O(N)
+        //Память O(1)
+        @Suppress("UNCHECKED_CAST")
+        override fun next(): T {
+            if (!hasNext()) throw NoSuchElementException()
+            while (storage[i] == null || storage[i] is Deleted) i++
+            lastNext = storage[i]
+            count++
+            i++
+            return lastNext as T
+        }
+
+        //Время O(1)
+        //Память O(1)
+        override fun remove() {
+            checkNotNull(lastNext)
+            storage[i - 1] = Deleted()
+            lastNext = null
+            size--
+            count--
+        }
     }
 }
